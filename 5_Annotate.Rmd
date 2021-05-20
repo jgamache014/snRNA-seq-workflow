@@ -1,0 +1,41 @@
+---
+title: "Annotate"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library('Seurat')
+library('dplyr')
+library('sctransform')
+
+#Load in datasets
+reference_dataset <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_celltypes_10000.int.features.rds')
+combined.integrated <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_updated.rds')
+
+#Set default assay to integrated
+DefaultAssay(reference_dataset) <- "integrated"
+DefaultAssay(combined.integrated) <- "integrated"
+reference_dataset
+#An object of class Seurat 
+#70712 features across 76519 samples within 3 assays 
+#Active assay: integrated (4878 features, 4878 variable features)
+#2 other assays present: RNA, SCT
+combined.integrated
+#An object of class Seurat 
+#74395 features across 209518 samples within 3 assays 
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+
+#Check overlapping variable features
+length(rownames(reference_dataset)) #4878
+length(rownames(combined.integrated)) #6753
+length(intersect(rownames(reference_dataset), rownames(combined.integrated))) #3574
+
+#Label transfer
+transfer.anchors <- FindTransferAnchors(reference = reference_dataset, query = combined.integrated,
+                                        normalization.method = "SCT", reference.assay = "integrated", query.assay = "integrated", 
+                                        project.query = FALSE, features = intersect(rownames(reference_dataset), rownames(combined.integrated)))
+predictions <- TransferData(anchorset = transfer.anchors, refdata = reference_dataset$CellType, dims = 1:30)
+combined.integrated <- AddMetaData(object = combined.integrated, metadata = predictions)
+```
