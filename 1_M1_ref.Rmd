@@ -1,0 +1,96 @@
+#Load in packages
+
+library(Seurat)
+library(sctransform)
+library(glmGamPoi)
+
+#Load in Seurat objects - these were created from original FASTQ files that were re-processed with Cell Ranger v4.0 (10X Genomics) and aligned to GRCh38
+srt.obj.10X159.1 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-1.rds')
+srt.obj.10X159.2 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-2.rds')
+srt.obj.10X159.3 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-3.rds')
+srt.obj.10X159.4 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-4.rds')
+srt.obj.10X159.5 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-5.rds')
+srt.obj.10X159.6 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-6.rds')
+srt.obj.10X159.7 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X159-7.rds')
+srt.obj.10X160.1 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-1.rds')
+srt.obj.10X160.2 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-2.rds')
+srt.obj.10X160.3 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-3.rds')
+srt.obj.10X160.5 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-5.rds')
+srt.obj.10X160.6 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-6.rds')
+srt.obj.10X160.7 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-7.rds')
+srt.obj.10X160.8 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Daniel/snATAC.snRNA.R01/R.objects/celltype.annotation/m1.10X.seurat.objects.added.suffix/seurat.obj_10X160-8.rds')
+
+#Merge into 1 combined object
+ref.list <- c(srt.obj.10X159.2, srt.obj.10X159.3, srt.obj.10X159.4, srt.obj.10X159.5, srt.obj.10X159.6, srt.obj.10X159.7,
+              srt.obj.10X160.1, srt.obj.10X160.2, srt.obj.10X160.3, srt.obj.10X160.5, srt.obj.10X160.6, srt.obj.10X160.7, srt.obj.10X160.8)
+ref.combined <- merge(x=srt.obj.10X159.1, y = ref.list)
+ref.combined
+head(ref.combined@meta.data)
+saveRDS(ref.combined, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_combined.rds')
+
+#Use metadata of published dataset to filter out nuclei that do not have cell type annotations
+metadata <- read.csv('/gpfs/fs1/data/chiba-faleklab/Daniel/metadata_10X_M1.csv')
+length(metadata$exp_component_name) #76533
+length(colnames(ref.combined)) #101176
+metadata.filtered <- metadata$exp_component_name%in%colnames(ref.combined)
+metadata.filtered <- metadata[metadata.filtered==TRUE,]
+cells.use <- metadata.filtered$exp_component_name
+length(cells.use) #76519
+ref.combined.subset <- subset(ref.combined, cells = cells.use)
+ref.combined.subset
+#An object of class Seurat
+#36601 features across 76519 samples within 1 assay
+#Active assay: RNA (36601 features, 0 variable features)
+table(metadata.filtered$exp_component_name == colnames(ref.combined.subset))
+#TRUE 
+#76519
+saveRDS(ref.combined.subset, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_combined_filtered.rds')
+
+#Create metadata column with run ID suffix
+cellIDs <- metadata.filtered$exp_component_name
+suffixes <- substr(cellIDs, 18, 38)
+ref.combined.suffix <- AddMetaData(ref.combined, metadata = suffixes, col.name = 'suffix')
+ref.combined.suffix@meta.data[sample(nrow(ref.combined.suffix@meta.data), 20), ] #check work
+saveRDS(ref.combined.suffix, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_combined_filtered_suffixes.rds')
+write.csv(metadata.filtered, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/csv_files/human.m1.ref_metadata_filtered.csv')
+
+#Run SCTransform iteratively for each run
+ref.split <- SplitObject(ref.combined.suffix, split.by = "suffix")
+ref.split
+for (i in 1:length(ref.split)) {
+  ref.split[[i]] <- SCTransform(ref.split[[i]], method = 'glmGamPoi', return.only.var.genes = FALSE, verbose = FALSE)
+}
+ref.split
+saveRDS(ref.split, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_combined_sctransform.rds')
+
+#Integrate runs using reference-based integration
+int.features <- SelectIntegrationFeatures(object.list = ref.split, nfeatures = 10000)
+ref.split <- PrepSCTIntegration(object.list = ref.split, anchor.features = int.features)
+reference_dataset <- which(names(ref.split) == "21L8TX_180927_001_A01")
+ref.anchors <- FindIntegrationAnchors(object.list = ref.split, normalization.method = "SCT", 
+                                           anchor.features = int.features, reference = reference_dataset)
+ref.integrated <- IntegrateData(anchorset = ref.anchors, normalization.method = "SCT")
+m1.ref <- ref.integrated
+m1.ref
+#An object of class Seurat 
+#70712 features across 76519 samples within 3 assays 
+#Active assay: integrated (4878 features, 4878 variable features)
+#2 other assays present: RNA, SCT
+saveRDS(m1.ref, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_integrated.rds')
+
+#Group cell type annotations in metadata into broader cell types
+metadata <- read.csv('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/csv_files/human.m1.ref_metadata_filtered.csv')
+CellType <- metadata$cluster_label
+CellType <- as.character(CellType)
+CellType <- replace(CellType, startsWith(CellType, 'Astro'), 'Astro')
+CellType <- replace(CellType, startsWith(CellType, 'Endo'), 'Endo')
+CellType <- replace(CellType, startsWith(CellType, 'Exc'), 'Exc')
+CellType <- replace(CellType, startsWith(CellType, 'Inh'), 'Inh')
+CellType <- replace(CellType, startsWith(CellType, 'Micro'), 'Micro')
+CellType <- replace(CellType, startsWith(CellType, 'Oligo'), 'Oligo') 
+CellType <- replace(CellType, startsWith(CellType, 'OPC'), 'OPC')
+CellType <- replace(CellType, startsWith(CellType, 'VLMC'), 'VLMC')
+CellType <- as.factor(CellType)
+levels(CellType)
+m1.ref$CellType <- CellType
+saveRDS(m1.ref, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_celltypes_10000.int.features.rds')
