@@ -1,0 +1,37 @@
+---
+title: "SCTransform_integrate"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library('Seurat')
+library('dplyr')
+library('sctransform')
+library('glmGamPoi')
+
+#Select features for downstream integration and run PrepSCTIntegration, which ensures that all necessary Pearson residuals have been calculated
+combined.list <- SplitObject(combined, split.by = "sampID")
+combined.list
+
+for (i in 1:length(combined.list)) {
+  combined.list[[i]] <- SCTransform(combined.list[[i]], method = 'glmGamPoi', return.only.var.genes = FALSE, verbose = FALSE)
+}
+
+combined.features <- SelectIntegrationFeatures(object.list = combined.list, nfeatures = 10000)
+combined.list <- PrepSCTIntegration(object.list = combined.list, anchor.features = combined.features)
+
+reference_dataset <- which(names(combined.list) == "rna963") #this is for reference-based integration
+
+#Identify anchors and integrate the datasets with SCT normalization
+combined.anchors <- FindIntegrationAnchors(object.list = combined.list, normalization.method = "SCT", 
+                                           anchor.features = combined.features, reference = reference_dataset)
+saveRDS(combined.anchors, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_anchors_ref_based.rds')
+combined.integrated <- IntegrateData(anchorset = combined.anchors, normalization.method = "SCT")
+saveRDS(combined.integrated, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated.rds')
+combined.integrated
+#An object of class Seurat 
+#74395 features across 209518 samples within 3 assays 
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+```
