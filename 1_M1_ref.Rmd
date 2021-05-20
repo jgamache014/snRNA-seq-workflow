@@ -1,3 +1,9 @@
+---
+title: "M1_ref"
+output: html_notebook
+---
+
+```{r}
 #Load in packages
 
 library(Seurat)
@@ -94,3 +100,4 @@ CellType <- as.factor(CellType)
 levels(CellType)
 m1.ref$CellType <- CellType
 saveRDS(m1.ref, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/human.m1.ref_celltypes_10000.int.features.rds')
+```
