@@ -1,0 +1,280 @@
+---
+title: "Seurat_obj_filter"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library(dplyr)
+library(Seurat)
+library(ggplot2)
+library(patchwork)
+
+#Load in snRNA-seq data and create Seurat objects 
+#Add sex, age, PMI, and sample ID as metadata to each object
+
+counts1099 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6353rna_order6353atac/snRNA/Cellranger_v4.0.0/1099rna_count_CR4/filtered_feature_bc_matrix/")
+rna1099 <- CreateSeuratObject(counts = counts1099, project = "LOAD")
+rna1099 <- AddMetaData(rna1099, metadata = as.factor("Female"), col.name = 'Sex')
+rna1099 <- AddMetaData(rna1099, metadata = as.numeric(95), col.name = 'age')
+rna1099 <- AddMetaData(rna1099, metadata = as.numeric(6.6), col.name = 'PMI')
+rna1099 <- AddMetaData(rna1099, metadata = as.factor("rna1099"), col.name = 'sampID')
+
+counts273 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6393rna_order6394atac/snRNA/cellranger v4.0.0/273rna_count_CR4/filtered_feature_bc_matrix/")
+rna273 <- CreateSeuratObject(counts = counts273, project = "LOAD")
+rna273 <- AddMetaData(rna273, metadata = as.factor("Female"), col.name = 'Sex')
+rna273 <- AddMetaData(rna273, metadata = as.numeric(92), col.name = 'age')
+rna273 <- AddMetaData(rna273, metadata = as.numeric(14), col.name = 'PMI')
+rna273 <- AddMetaData(rna273, metadata = as.factor("rna273"), col.name = 'sampID')
+
+counts730 <- Read10X(data.dir = "Z:/RAW DATA/Julia/snRNAseq_snATACseq/order6218/snRNA/730rna_count_CR4/filtered_feature_bc_matrix/")
+rna730 <- CreateSeuratObject(counts = counts730, project = "LOAD")
+rna730 <- AddMetaData(rna730, metadata = as.factor("Female"), col.name = 'Sex')
+rna730 <- AddMetaData(rna730, metadata = as.numeric(86), col.name = 'age')
+rna730 <- AddMetaData(rna730, metadata = as.numeric(12.2), col.name = 'PMI')
+rna730 <- AddMetaData(rna730, metadata = as.factor("rna730"), col.name = 'sampID')
+
+counts430 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p1/430rna_count_CR4/filtered_feature_bc_matrix/")
+rna430 <- CreateSeuratObject(counts = counts430, project = "LOAD")
+rna430 <- AddMetaData(rna430, metadata = as.factor("Female"), col.name = 'Sex')
+rna430 <- AddMetaData(rna430, metadata = as.numeric(81), col.name = 'age')
+rna430 <- AddMetaData(rna430, metadata = as.numeric(16.5), col.name = 'PMI')
+rna430 <- AddMetaData(rna430, metadata = as.factor("rna430"), col.name = 'sampID')
+
+counts601 <- Read10X(data.dir = "Z:/RAW DATA/Julia/snRNAseq_snATACseq/orders6789rna_6790atac/snRNA/601_matrix_files/filtered_feature_bc_matrix/")
+rna601 <- CreateSeuratObject(counts = counts601, project = "LOAD")
+rna601 <- AddMetaData(rna601, metadata = as.factor("Female"), col.name = 'Sex')
+rna601 <- AddMetaData(rna601, metadata = as.numeric(76), col.name = 'age')
+rna601 <- AddMetaData(rna601, metadata = as.numeric(10.5), col.name = 'PMI')
+rna601 <- AddMetaData(rna601, metadata = as.factor("rna601"), col.name = 'sampID')
+
+counts781 <- Read10X(data.dir = "Z:/RAW DATA/Julia/snRNAseq_snATACseq/orders6789rna_6790atac/snRNA/781_matrix_files/filtered_feature_bc_matrix/")
+rna781 <- CreateSeuratObject(counts = counts781, project = "LOAD")
+rna781 <- AddMetaData(rna781, metadata = as.factor("Female"), col.name = 'Sex')
+rna781 <- AddMetaData(rna781, metadata = as.numeric(79), col.name = 'age')
+rna781 <- AddMetaData(rna781, metadata = as.numeric(3.75), col.name = 'PMI')
+rna781 <- AddMetaData(rna781, metadata = as.factor("rna781"), col.name = 'sampID')
+
+counts963 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6353rna_order6353atac/snRNA/Cellranger_v4.0.0/963rna_count_CR4/filtered_feature_bc_matrix/")
+rna963 <- CreateSeuratObject(counts = counts963, project = "Normal")
+rna963 <- AddMetaData(rna963, metadata = as.factor("Female"), col.name = 'Sex')
+rna963 <- AddMetaData(rna963, metadata = as.numeric(82), col.name = 'age')
+rna963 <- AddMetaData(rna963, metadata = as.numeric(8.12), col.name = 'PMI')
+rna963 <- AddMetaData(rna963, metadata = as.factor("rna963"), col.name = 'sampID')
+
+counts1690 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6218rna_order6218atac/snRNA/1690rna_count_CR4/filtered_feature_bc_matrix/")
+rna1690 <- CreateSeuratObject(counts = counts1690, project = "Normal")
+rna1690 <- AddMetaData(rna1690, metadata = as.factor("Female"), col.name = 'Sex')
+rna1690 <- AddMetaData(rna1690, metadata = as.numeric(84), col.name = 'age')
+rna1690 <- AddMetaData(rna1690, metadata = as.numeric(4.42), col.name = 'PMI')
+rna1690 <- AddMetaData(rna1690, metadata = as.factor("rna1690"), col.name = 'sampID')
+
+counts1545 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6400rna_order6401atac/snRNA/cellranger v4.0.0/1545rna_count_CR4/filtered_feature_bc_matrix/")
+rna1545 <- CreateSeuratObject(counts = counts1545, project = "Normal")
+rna1545 <- AddMetaData(rna1545, metadata = as.factor("Female"), col.name = 'Sex')
+rna1545 <- AddMetaData(rna1545, metadata = as.numeric(64), col.name = 'age')
+rna1545 <- AddMetaData(rna1545, metadata = as.numeric(10.67), col.name = 'PMI')
+rna1545 <- AddMetaData(rna1545, metadata = as.factor("rna1545"), col.name = 'sampID')
+
+counts984 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6400rna_order6401atac/snRNA/cellranger v4.0.0/984rna_count_CR4/filtered_feature_bc_matrix/")
+rna984 <- CreateSeuratObject(counts = counts984, project = "Normal")
+rna984 <- AddMetaData(rna984, metadata = as.factor("Female"), col.name = 'Sex')
+rna984 <- AddMetaData(rna984, metadata = as.numeric(65), col.name = 'age')
+rna984 <- AddMetaData(rna984, metadata = as.numeric(1.96), col.name = 'PMI')
+rna984 <- AddMetaData(rna984, metadata = as.factor("rna984"), col.name = 'sampID')
+
+counts1600 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p1/1600rna_count_CR4/filtered_feature_bc_matrix/")
+rna1600 <- CreateSeuratObject(counts = counts1600, project = "Normal")
+rna1600 <- AddMetaData(rna1600, metadata = as.factor("Female"), col.name = 'Sex')
+rna1600 <- AddMetaData(rna1600, metadata = as.numeric(85), col.name = 'age')
+rna1600 <- AddMetaData(rna1600, metadata = as.numeric(12.97), col.name = 'PMI')
+rna1600 <- AddMetaData(rna1600, metadata = as.factor("rna1600"), col.name = 'sampID')
+
+counts1670 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p2/1670rna_count_CR4/filtered_feature_bc_matrix/")
+rna1670 <- CreateSeuratObject(counts = counts1670, project = "Normal")
+rna1670 <- AddMetaData(rna1670, metadata = as.factor("Female"), col.name = 'Sex')
+rna1670 <- AddMetaData(rna1670, metadata = as.numeric(87), col.name = 'age')
+rna1670 <- AddMetaData(rna1670, metadata = as.numeric(18), col.name = 'PMI')
+rna1670 <- AddMetaData(rna1670, metadata = as.factor("rna1670"), col.name = 'sampID')
+
+counts111 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6393rna_order6394atac/snRNA/cellranger v4.0.0/111rna_count_CR4/filtered_feature_bc_matrix/")
+rna111 <- CreateSeuratObject(counts = counts111, project = "LOAD")
+rna111 <- AddMetaData(rna111, metadata = as.factor("Male"), col.name = 'Sex')
+rna111 <- AddMetaData(rna111, metadata = as.numeric(79), col.name = 'age')
+rna111 <- AddMetaData(rna111, metadata = as.numeric(0.6167), col.name = 'PMI')
+rna111 <- AddMetaData(rna111, metadata = as.factor("rna111"), col.name = 'sampID')
+
+counts191 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p1/191rna_count_CR4/filtered_feature_bc_matrix/")
+rna191 <- CreateSeuratObject(counts = counts191, project = "LOAD")
+rna191 <- AddMetaData(rna191, metadata = as.factor("Male"), col.name = 'Sex')
+rna191 <- AddMetaData(rna191, metadata = as.numeric(82), col.name = 'age')
+rna191 <- AddMetaData(rna191, metadata = as.numeric(1.5), col.name = 'PMI')
+rna191 <- AddMetaData(rna191, metadata = as.factor("rna191"), col.name = 'sampID')
+
+counts127 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6400rna_order6401atac/snRNA/cellranger v4.0.0/127rna_count_CR4/filtered_feature_bc_matrix/")
+rna127 <- CreateSeuratObject(counts = counts127, project = "LOAD")
+rna127 <- AddMetaData(rna127, metadata = as.factor("Male"), col.name = 'Sex')
+rna127 <- AddMetaData(rna127, metadata = as.numeric(66), col.name = 'age')
+rna127 <- AddMetaData(rna127, metadata = as.numeric(3), col.name = 'PMI')
+rna127 <- AddMetaData(rna127, metadata = as.factor("rna127"), col.name = 'sampID')
+
+counts347 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p2/347rna_count_CR4/filtered_feature_bc_matrix/")
+rna347 <- CreateSeuratObject(counts = counts347, project = "LOAD")
+rna347 <- AddMetaData(rna347, metadata = as.factor("Male"), col.name = 'Sex')
+rna347 <- AddMetaData(rna347, metadata = as.numeric(77), col.name = 'age')
+rna347 <- AddMetaData(rna347, metadata = as.numeric(16.83), col.name = 'PMI')
+rna347 <- AddMetaData(rna347, metadata = as.factor("rna347"), col.name = 'sampID')
+
+counts357 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p2/357rna_count_CR4/filtered_feature_bc_matrix/")
+rna357 <- CreateSeuratObject(counts = counts357, project = "LOAD")
+rna357 <- AddMetaData(rna357, metadata = as.factor("Male"), col.name = 'Sex')
+rna357 <- AddMetaData(rna357, metadata = as.numeric(75), col.name = 'age')
+rna357 <- AddMetaData(rna357, metadata = as.numeric(3), col.name = 'PMI')
+rna357 <- AddMetaData(rna357, metadata = as.factor("rna357"), col.name = 'sampID')
+
+counts372 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6538rna_order6537atac/rna/372rna_count_CR4_dan/filtered_feature_bc_matrix/")
+rna372 <- CreateSeuratObject(counts = counts372, project = "LOAD")
+rna372 <- AddMetaData(rna372, metadata = as.factor("Male"), col.name = 'Sex')
+rna372 <- AddMetaData(rna372, metadata = as.numeric(87), col.name = 'age')
+rna372 <- AddMetaData(rna372, metadata = as.numeric(1.33), col.name = 'PMI')
+rna372 <- AddMetaData(rna372, metadata = as.factor("rna372"), col.name = 'sampID')
+
+counts1557 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6353rna_order6353atac/snRNA/Cellranger_v4.0.0/1557rna_count_CR4/filtered_feature_bc_matrix/")
+rna1557 <- CreateSeuratObject(counts = counts1557, project = "Normal")
+rna1557 <- AddMetaData(rna1557, metadata = as.factor("Male"), col.name = 'Sex')
+rna1557 <- AddMetaData(rna1557, metadata = as.numeric(90), col.name = 'age')
+rna1557 <- AddMetaData(rna1557, metadata = as.numeric(4), col.name = 'PMI')
+rna1557 <- AddMetaData(rna1557, metadata = as.factor("rna1557"), col.name = 'sampID')
+
+counts99 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6393rna_order6394atac/snRNA/cellranger v4.0.0/99rna_count_CR4/filtered_feature_bc_matrix/")
+rna99 <- CreateSeuratObject(counts = counts99, project = "Normal")
+rna99 <- AddMetaData(rna99, metadata = as.factor("Male"), col.name = 'Sex')
+rna99 <- AddMetaData(rna99, metadata = as.numeric(85), col.name = 'age')
+rna99 <- AddMetaData(rna99, metadata = as.numeric(2), col.name = 'PMI')
+rna99 <- AddMetaData(rna99, metadata = as.factor("rna99"), col.name = 'sampID')
+
+counts196 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6400rna_order6401atac/snRNA/cellranger v4.0.0/196rna_count_CR4/filtered_feature_bc_matrix/")
+rna196 <- CreateSeuratObject(counts = counts196, project = "Normal")
+rna196 <- AddMetaData(rna196, metadata = as.factor("Male"), col.name = 'Sex')
+rna196 <- AddMetaData(rna196, metadata = as.numeric(75), col.name = 'age')
+rna196 <- AddMetaData(rna196, metadata = as.numeric(18.88), col.name = 'PMI')
+rna196 <- AddMetaData(rna196, metadata = as.factor("rna730"), col.name = 'sampID')
+
+counts542 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p1/542rna_count_CR4/filtered_feature_bc_matrix/")
+rna542 <- CreateSeuratObject(counts = counts542, project = "Normal")
+rna542 <- AddMetaData(rna542, metadata = as.factor("Male"), col.name = 'Sex')
+rna542 <- AddMetaData(rna542, metadata = as.numeric(82), col.name = 'age')
+rna542 <- AddMetaData(rna542, metadata = as.numeric(3.25), col.name = 'PMI')
+rna542 <- AddMetaData(rna542, metadata = as.factor("rna542"), col.name = 'sampID')
+
+counts676 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6410rna_order6411atac/snRNA/p2/676rna_count_CR4/filtered_feature_bc_matrix/")
+rna676 <- CreateSeuratObject(counts = counts676, project = "Normal")
+rna676 <- AddMetaData(rna676, metadata = as.factor("Male"), col.name = 'Sex')
+rna676 <- AddMetaData(rna676, metadata = as.numeric(60), col.name = 'age')
+rna676 <- AddMetaData(rna676, metadata = as.numeric(9.5), col.name = 'PMI')
+rna676 <- AddMetaData(rna676, metadata = as.factor("rna676"), col.name = 'sampID')
+
+counts688 <- Read10X(data.dir = "Z:/RAW DATA/Dan/Parallel_snRNAseq_snATACseq/order6538rna_order6537atac/rna/688rna_count_CR4_dan/filtered_feature_bc_matrix/")
+rna688 <- CreateSeuratObject(counts = counts688, project = "Normal")
+rna688 <- AddMetaData(rna688, metadata = as.factor("Male"), col.name = 'Sex')
+rna688 <- AddMetaData(rna688, metadata = as.numeric(63), col.name = 'age')
+rna688 <- AddMetaData(rna688, metadata = as.numeric(7), col.name = 'PMI')
+rna688 <- AddMetaData(rna688, metadata = as.factor("rna688"), col.name = 'sampID')
+
+# QC filtering
+
+rna1099[["percent.mt"]] <- PercentageFeatureSet(rna1099, pattern = "^MT-")
+VlnPlot(rna1099, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1099sub <- subset(rna1099, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna273[["percent.mt"]] <- PercentageFeatureSet(rna273, pattern = "^MT-")
+VlnPlot(rna273, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna273sub <- subset(rna273, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna730[["percent.mt"]] <- PercentageFeatureSet(rna730, pattern = "^MT-")
+VlnPlot(rna730, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna730sub <- subset(rna730, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna430[["percent.mt"]] <- PercentageFeatureSet(rna430, pattern = "^MT-")
+VlnPlot(rna430, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna430sub <- subset(rna430, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna601[["percent.mt"]] <- PercentageFeatureSet(rna601, pattern = "^MT-")
+VlnPlot(rna601, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna601sub <- subset(rna601, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna781[["percent.mt"]] <- PercentageFeatureSet(rna781, pattern = "^MT-")
+VlnPlot(rna781, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna781sub <- subset(rna781, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna963[["percent.mt"]] <- PercentageFeatureSet(rna963, pattern = "^MT-")
+VlnPlot(rna963, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna963sub <- subset(rna963, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna1690[["percent.mt"]] <- PercentageFeatureSet(rna1690, pattern = "^MT-")
+VlnPlot(rna1690, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1690sub <- subset(rna1690, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna1545[["percent.mt"]] <- PercentageFeatureSet(rna1545, pattern = "^MT-")
+VlnPlot(rna1545, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1545sub <- subset(rna1545, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna984[["percent.mt"]] <- PercentageFeatureSet(rna984, pattern = "^MT-")
+VlnPlot(rna984, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna984sub <- subset(rna984, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna1600[["percent.mt"]] <- PercentageFeatureSet(rna1600, pattern = "^MT-")
+VlnPlot(rna1600, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1600sub <- subset(rna1600, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna1670[["percent.mt"]] <- PercentageFeatureSet(rna1670, pattern = "^MT-")
+VlnPlot(rna1670, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1670sub <- subset(rna1670, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna111[["percent.mt"]] <- PercentageFeatureSet(rna111, pattern = "^MT-")
+VlnPlot(rna111, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna111sub <- subset(rna111, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna191[["percent.mt"]] <- PercentageFeatureSet(rna191, pattern = "^MT-")
+VlnPlot(rna191, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna191sub <- subset(rna191, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna127[["percent.mt"]] <- PercentageFeatureSet(rna127, pattern = "^MT-")
+VlnPlot(rna127, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna127sub <- subset(rna127, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna347[["percent.mt"]] <- PercentageFeatureSet(rna347, pattern = "^MT-")
+VlnPlot(rna347, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna347sub <- subset(rna347, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna357[["percent.mt"]] <- PercentageFeatureSet(rna357, pattern = "^MT-")
+VlnPlot(rna357, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna357sub <- subset(rna357, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna372[["percent.mt"]] <- PercentageFeatureSet(rna372, pattern = "^MT-")
+VlnPlot(rna372, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna372sub <- subset(rna372, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna1557[["percent.mt"]] <- PercentageFeatureSet(rna1557, pattern = "^MT-")
+VlnPlot(rna1557, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna1557sub <- subset(rna1557, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna99[["percent.mt"]] <- PercentageFeatureSet(rna99, pattern = "^MT-")
+VlnPlot(rna99, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna99sub <- subset(rna99, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna196[["percent.mt"]] <- PercentageFeatureSet(rna196, pattern = "^MT-")
+VlnPlot(rna196, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna196sub <- subset(rna196, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna542[["percent.mt"]] <- PercentageFeatureSet(rna542, pattern = "^MT-")
+VlnPlot(rna542, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna542sub <- subset(rna542, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna676[["percent.mt"]] <- PercentageFeatureSet(rna676, pattern = "^MT-")
+VlnPlot(rna676, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna676sub <- subset(rna676, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
+
+rna688[["percent.mt"]] <- PercentageFeatureSet(rna688, pattern = "^MT-")
+VlnPlot(rna688, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0.1)
+rna688sub <- subset(rna688, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 17.4)
