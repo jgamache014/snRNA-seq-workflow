@@ -1,0 +1,64 @@
+---
+title: "Merge_remove_MT"
+output: html_notebook
+---
+
+```{r}
+#Load packages
+library('Seurat')
+library('dplyr')
+
+#Load Seurat objects - these were previously filtered
+rna99 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna99.rds')
+rna111 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna111.rds')
+rna127 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna127.rds')
+rna191 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna191.rds')
+rna196 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna196.rds')
+rna273 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna273.rds')
+rna347 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna347.rds')
+rna357 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna357.rds')
+rna372 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna372.rds')
+rna430 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna430.rds')
+rna542 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna542.rds')
+rna601 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna601.rds')
+rna676 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna676.rds')
+rna688 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna688.rds')
+rna730 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna730.rds')
+rna781 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna781.rds')
+rna963 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna963.rds')
+rna984 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna984.rds')
+rna1099 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1099.rds')
+rna1545 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1545.rds')
+rna1557 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1557.rds')
+rna1600 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1600.rds')
+rna1670 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1670.rds')
+rna1690 <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_Prelim_RNA/Seurat_objects_not_norm/rna1690.rds')
+
+#Merge multiple Seurat objects
+list <- c(rna111, rna127, rna191, rna196, rna273, rna347, rna357, rna372, rna430, rna542, rna601, rna676, rna688, rna730, rna781, rna963, rna984, rna1099, rna1545, rna1557, rna1600, rna1670, rna1690)
+
+combined <- merge(x = rna99, y = list)
+#Warning message:
+  #In CheckDuplicateCellNames(object.list = objects) :
+  #Some cell names are duplicated across objects provided. Renaming to enforce unique cell names.
+
+combined
+#An object of class Seurat 
+#36601 features across 209518 samples within 1 assay 
+#Active assay: RNA (36601 features, 0 variable features)
+
+#Remove MT genes
+combined_data <- GetAssayData(combined, assay = "RNA")
+combined_data_noMT <- combined_data[-(which(rownames(combined_data) %in% c('MT-ND1','MT-ND2','MT-CO1','MT-CO2','MT-ATP8', 'MT-ATP6','MT-CO3', 'MT-ND3', 'MT-ND4L', 'MT-ND4', 'MT-ND5', 'MT-ND6', 'MT-CYB'))),]
+combined_noMT <- subset(combined, features = rownames(combined_data_noMT))
+combined_noMT_test <- grep("^MT-", rownames(combined_noMT), value = TRUE)
+combined_noMT_test
+#character(0)
+combined <- combined_noMT
+combined
+#An object of class Seurat 
+#36588 features across 209518 samples within 1 assay 
+#Active assay: RNA (36588 features, 0 variable features)
+
+saveRDS(combined, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined.rds')
+```
