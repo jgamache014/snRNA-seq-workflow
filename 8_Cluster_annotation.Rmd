@@ -1,0 +1,63 @@
+---
+title: "Cluster_annotation"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library('Seurat')
+library('dplyr')
+
+#Count cell types in each cluster to determine which cell type is majority in each cluster
+levels(combined.integrated$seurat_clusters)
+cluster_celltype_counts <- table(combined.integrated$seurat_clusters, combined.integrated$predicted.id)
+write.csv(cluster_celltype_counts, 'celltypes_in_clusters.csv')
+
+#Plot cell type-specific markers to confirm predictions
+DefaultAssay(combined.integrated) <- "SCT"
+png("featplots_celltypemarkers.png", width = 1000, height = 1000)
+FeaturePlot(combined.integrated, features = c("SLC1A2", "RBFOX3", "SLC17A7", "GAD1", "GAD2", "SLC6A1", "APBB1IP", "MOBP", "MEGF11"), slot = "data", pt.size = 0.1, reduction = "umap")
+dev.off()
+
+#Manually annotate clusters
+new.cluster.ids <- c("Exc1","Oligo1","Oligo2","Astro1","Oligo3","Oligo4","Oligo5","OPC1","Micro1","Exc2","Oligo6","Oligo7","Inh1","Oligo8","Exc3","Exc4","Inh2","Inh3","Exc5","Inh4","Inh5","Exc6","Micro2","Micro3","Exc7","Exc8","Exc9","Exc10","Inh6","Exc11","Inh7","Inh8","OPC2")
+names(new.cluster.ids) <- levels(combined.integrated)
+combined.integrated <- RenameIdents(combined.integrated, new.cluster.ids)
+combined.integrated$cell.type.number <- Idents(combined.integrated) #Create new metadata column with cluster labels
+
+#count cells in each cluster with new IDs and compute nuclei proportions per sample
+cluster_celltype_counts <- table(combined.integrated$cell.type.number)
+write.csv(cluster_celltype_counts, 'cell_type_number_counts.csv')
+celltype_origident_counts <- table(combined.integrated$orig.ident, combined.integrated$cell.type.number)
+write.csv(celltype_origident_counts, 'cell_type_number_counts_split.csv')
+cluster_celltype_counts_sampID <- table(combined.integrated$sampID, combined.integrated$cell.type.number)
+write.csv(cluster_celltype_counts_sampID, 'cell_type_number_counts_sampID.csv')
+
+#Create new metadata column of cluster-based cell types
+cell.type.number <- combined.integrated$cell.type.number
+cell.type.number <- as.character(cell.type.number)
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'Astro'), 'Astro')
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'Exc'), 'Exc')
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'Inh'), 'Inh')
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'Micro'), 'Micro')
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'Oligo'), 'Oligo') 
+cell.type.number <- replace(cell.type.number, startsWith(cell.type.number, 'OPC'), 'OPC')
+cell.type.number <- as.factor(cell.type.number)
+levels(cell.type.number)
+combined.integrated$cell.type <- cell.type.number
+
+#Count cells of each type and compute nuclei proportions per sample
+cell_type_counts <- table(combined.integrated$cell.type)
+write.csv(cell_type_counts, 'cell_type_counts.csv')
+cell_type_counts_split <- table(combined.integrated$orig.ident, combined.integrated$cell.type)
+write.csv(cell_type_counts_split, 'cell_type_counts_split.csv')
+cell_type_counts_sampID <- table(combined.integrated$sampID, combined.integrated$cell.type)
+write.csv(cell_type_counts_sampID, 'cell_type_counts_sampID.csv')
+
+#Find all markers
+integrated.markers <- FindAllMarkers(combined.integrated, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+saveRDS(integrated.markers, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/integrated_markers.rds')
+write.csv(integrated.markers, 'cluster_markers.csv')
+cluster_markers <- integrated.markers %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC)
+write.csv(cluster_markers,"cluster_markers_top20.csv")
+```
