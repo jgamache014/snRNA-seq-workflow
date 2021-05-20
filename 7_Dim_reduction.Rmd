@@ -1,0 +1,46 @@
+---
+title: "Dim_reduction"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library('Seurat')
+library('dplyr')
+
+#Read in dataset
+combined.integrated <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_labeled_filt_noEndoVLMC.rds')
+
+#Set default assay to integrated
+DefaultAssay(combined.integrated) <- "integrated"
+
+#Run PCA
+combined.integrated <- RunPCA(combined.integrated)
+combined.integrated
+#An object of class Seurat 
+#74395 features across 202223 samples within 3 assays 
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+#1 dimensional reduction calculated: pca
+
+saveRDS(combined.integrated, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_PCA.rds')
+
+#Determine dimensionality with elbow plot and compute variance explained by PCs
+png("ElbowPlot.png")
+ElbowPlot(combined.integrated, ndims = 50) 
+dev.off()
+
+pca <- combined.integrated@reductions$pca
+eigValues <- (pca@stdev)^2  ## EigenValues
+varExplained <- eigValues / sum(eigValues)
+varExplained
+
+#Run UMAP
+combined.integrated <- RunUMAP(combined.integrated, dims = 1:30)
+combined.integrated <- FindNeighbors(combined.integrated, reduction = "umap", dims = 1:2) #only 2 dims in UMAP reduction
+combined.integrated <- FindClusters(combined.integrated, resolution = 0.1)
+
+png("UMAP_d30_r01.png", width = 700, height = 650)
+DimPlot(combined.integrated, reduction = "umap", label = TRUE)
+dev.off()
+```
