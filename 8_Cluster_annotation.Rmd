@@ -7,6 +7,7 @@ output: html_notebook
 #Load in packages
 library('Seurat')
 library('dplyr')
+library('plyr')
 
 #Count cell types in each cluster to determine which cell type is majority in each cluster
 levels(combined.integrated$seurat_clusters)
@@ -60,4 +61,20 @@ saveRDS(integrated.markers, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_fin
 write.csv(integrated.markers, 'cluster_markers.csv')
 cluster_markers <- integrated.markers %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC)
 write.csv(cluster_markers,"cluster_markers_top20.csv")
+
+#Add nuclei proportion to metadata
+#Nuclei proportion is defined as follows: for each sample, the number of nuclei in a given cluster or of a given cell type divided by that samples total nuclei count
+cell.type.proportions <- read.csv('cell_type_proportions_sampID.csv')
+combined.integrated <- AddMetaData(combined.integrated, metadata = join(combined.integrated@meta.data, cell.type.proportions)$cell.type.proportion, col.name = 'cell.type.proportion')
+combined.integrated@meta.data[sample(nrow(combined.integrated@meta.data), 20), ] #check work
+
+cell.type.number.proportions <- read.csv('cell_type_number_proportions_sampID.csv')
+combined.integrated <- AddMetaData(combined.integrated, metadata = join(combined.integrated@meta.data, cell.type.number.proportions)$cell.type.number.proportion, col.name = 'cell.type.number.proportion')
+combined.integrated@meta.data[sample(nrow(combined.integrated@meta.data), 20), ] #check work
+saveRDS(combined.integrated, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_PCA_UMAP_metadata.rds')
+
+#Save data for 1 example cluster to use for DE analysis
+Idents(combined.integrated) <- "cell.type.number"
+Micro1 <- subset(combined.integrated, idents = "Micro1")
+saveRDS(Micro1, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/Micro1_for_DE_test.rds')
 ```
