@@ -1,0 +1,81 @@
+---
+title: "Filter"
+output: html_notebook
+---
+
+```{r}
+#Load in packages
+library('Seurat')
+library('dplyr')
+
+#Visualize distribution of prediction scores from label transfer
+png("pred_score_max_histogram_integrated.png")
+hist(combined.integrated$prediction.score.max) 
+dev.off()
+
+#Filter based on prediction score - remove cells with max score of less than 0.5
+combined.integrated <- subset(combined.integrated, subset = prediction.score.max > 0.5)
+combined.integrated
+#An object of class Seurat 
+#74395 features across 207778 samples within 3 assays 
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+saveRDS(combined.integrated, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_labeled_integrated.rds')
+
+#Filter out 'hybrid' cells
+combined.integrated$adjusted.prediction.score.max<-1 #create a new numeric column
+#find difference between 1st & 2nd pred.scores, scaled by max prediction score per each cell.
+#values close to 1 are accurate
+for (i in 1:ncol(combined.integrated)){
+  combined.integrated$adjusted.prediction.score.max[i]<-(combined.integrated$prediction.score.max[i] - sort(c(combined.integrated$prediction.score.Astro[i],
+                                                                                                              combined.integrated$prediction.score.Endo[i],
+                                                                                                              combined.integrated$prediction.score.Inh[i],
+                                                                                                              combined.integrated$prediction.score.Exc[i],
+                                                                                                              combined.integrated$prediction.score.Oligo[i],
+                                                                                                              combined.integrated$prediction.score.Micro[i],
+                                                                                                              combined.integrated$prediction.score.OPC[i],
+                                                                                                              combined.integrated$prediction.score.VLMC[i]),
+                                                                                                            decreasing = TRUE)[2])/combined.integrated$prediction.score.max[i]
+} 
+
+#Visualize distribution of adjusted prediction scores
+png("adj_pred_score_max_histogram.png")
+hist(combined.integrated$adjusted.prediction.score.max) 
+dev.off()
+
+#Remove cells with max adjusted prediction score of less than 0.65
+combined.integrated <- subset(combined.integrated, subset = adjusted.prediction.score.max > 0.65)
+combined.integrated
+#An object of class Seurat 
+#74395 features across 202688 samples within 3 assays 
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+
+saveRDS(combined.integrated, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_labeled_filt.rds')
+
+#Fix metadata - rna730 is sampID of sample 5 and 15 when it should only be sample 15. rna196 is missing and needs to replace rna730 as sampID for sample 5
+#A separate csv with correct values was created
+metadata_196 <- read.csv('combined_integrated_labeled_filt_metadata_rna196.csv')
+combined.integrated$sampID <- metadata_196$sampID
+metadata_fixed <- combined.integrated@meta.data
+write.csv(metadata_fixed, 'combined_integrated_labeled_metadata_fixed.csv')
+
+#Remove rare cell types that did not form their own clusters in preliminary UMAP analysis (endo & VLMC)
+#Count cell types
+celltype_counts <- table(combined.integrated$orig.ident, combined.integrated$predicted.id)
+write.csv(celltype_counts, 'celltypes_by_orig_ident_unfiltered.csv')
+Idents(combined.integrated) <- "predicted.id"
+combined.integrated.noEndoVLMC <- subset(combined.integrated, idents = c("Astro", "Exc", "Inh", "Micro", "Oligo", "OPC"))
+combined.integrated.noEndoVLMC
+#An object of class Seurat
+#74395 features across 202223 samples within 3 assays
+#Active assay: integrated (6753 features, 6753 variable features)
+#2 other assays present: RNA, SCT
+
+saveRDS(combined.integrated.noEndoVLMC, '/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/combined_integrated_labeled_filt_noEndoVLMC.rds')
+
+#Check if any nuclei have NaN values in integrated data, as this error can occur for large datasets - none found
+int.data.matrix <- as.matrix(combined.integrated@assays$integrated@data) #needed to do which() with characters
+which(int.data.matrix=="NaN", arr.ind = TRUE) 
+#row col
+```
