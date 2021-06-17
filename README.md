@@ -14,7 +14,7 @@ This is the R code used to process and analyze single-nuclei (sn)RNA-seq data (1
 
 The method used to identify 'hybrid' nuclei in step 6 is taken from [Grubman et al, 2019](https://www.nature.com/articles/s41593-019-0539-4). Nuclei were filtered out if the difference between the first and second highest cell type scores were within 65% of the highest cell type score.
 
-For differential expression analyses in step 9, we used MAST directly with a random effect for sample as in [Zimmerman et al., 2021](https://www.nature.com/articles/s41467-021-21038-1). This is done for 1 example cluster of microglia.
+For differential expression analyses in step 9, we used MAST directly with a random effect for sample as in [Zimmerman et al., 2021](https://www.nature.com/articles/s41467-021-21038-1). This is done for 1 example cluster of microglia. Different formatting steps should be used for datasets with >30,000 cells per group, and an example of this is also shown.
 
 Mitochondrial (MT) gene expression in snRNA-seq data was treated as background signal. Thus, after using % MT as a tool to filter out nuclei with high background, these genes were removed.
 
