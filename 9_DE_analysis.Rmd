@@ -109,4 +109,81 @@ fcHurdle_JG_prop_na_omit <- stats::na.omit(as.data.frame(fcHurdle_JG_fdr_prop_pc
 hist(fcHurdle_JG_prop_na_omit$fdr) #examine distribution of adjusted p-values
 hist(fcHurdle_JG_prop_na_omit$coef, breaks = 25) #examine distribution of logFC
 fcHurdleSig_prop_JG <- subset(fcHurdle_JG_prop_na_omit, subset = fdr<0.05) #determine number of significant genes
+
+
+############################################################################################
+### For datasets of >30,000 cells per group, replace above formatting with the following ###
+############################################################################################
+
+Oligo <- readRDS('/gpfs/fs1/data/chiba-faleklab/Parallel_ADRC_RNA_final/objects/Oligo_for_DE.rds')
+
+DefaultAssay(Oligo) <- "RNA"
+Oligo
+
+#Remove genes that are not expressed
+counts <- Oligo@assays$RNA@counts
+nrow(counts) #36588
+genes.use <- rowSums(counts) > 0
+genes.use <- as.data.frame(genes.use)
+head(genes.use)
+genes.use <- subset(genes.use, genes.use=='TRUE')
+genes.use <- as.vector(rownames(genes.use))
+head(genes.use)
+length(genes.use) #31720
+
+Oligo <- subset(Oligo, features=genes.use)
+counts.subset <-Oligo@assays$RNA@counts
+nrow(counts.subset) #31720
+
+#split matrix into submatrices, format,  log transform, then re-merge
+Oligo1 <- Oligo[,1:45000]
+Oligo2 <- Oligo[,45001:83945]
+
+allgenes_JG <- t(as.data.frame(Oligo1@assays$RNA@counts))
+allgenes_JG <- as.data.frame(allgenes_JG)
+ngenes <- ncol(allgenes_JG)
+allgenes_JG$orig.ident <- Oligo1@meta.data$orig.ident
+allgenes_JG$sampID <- Oligo1@meta.data$sampID
+allgenes_JG$Sex <- Oligo1@meta.data$Sex
+allgenes_JG$age <- Oligo1@meta.data$age
+allgenes_JG$PMI <- Oligo1@meta.data$PMI
+allgenes_JG$seq.sat <- Oligo1@meta.data$seq.sat
+allgenes_JG$wellKey <- paste(Oligo1@meta.data$sampID, rownames(Oligo1@meta.data), sep = "_")
+rownames(allgenes_JG) <- allgenes_JG$wellKey
+allgenes_JG$cell.type.number.proportion <- Oligo1@meta.data$cell.type.number.proportion
+allgenes_JG <- allgenes_JG[,c(ngenes+7,ngenes+2,ngenes+1,ngenes+3,ngenes+4,ngenes+5,ngenes+6,ngenes+8,1:ngenes)]
+genecounts_JG <- as.matrix(t(allgenes_JG[,c(-1,-2,-3,-4,-5,-6,-7,-8)]))
+genecounts_JG <- log2(genecounts_JG + 1) #log2 transform
+nrow(genecounts_JG) #31720 genes
+
+allgenes_JG2 <- t(as.data.frame(Oligo2@assays$RNA@counts))
+allgenes_JG2 <- as.data.frame(allgenes_JG2)
+ngenes <- ncol(allgenes_JG2)
+allgenes_JG2$orig.ident <- Oligo2@meta.data$orig.ident
+allgenes_JG2$sampID <- Oligo2@meta.data$sampID
+allgenes_JG2$Sex <- Oligo2@meta.data$Sex
+allgenes_JG2$age <- Oligo2@meta.data$age
+allgenes_JG2$PMI <- Oligo2@meta.data$PMI
+allgenes_JG2$seq.sat <- Oligo2@meta.data$seq.sat
+allgenes_JG2$wellKey <- paste(Oligo2@meta.data$sampID, rownames(Oligo2@meta.data), sep = "_")
+rownames(allgenes_JG2) <- allgenes_JG2$wellKey
+allgenes_JG2$cell.type.number.proportion <- Oligo2@meta.data$cell.type.number.proportion
+allgenes_JG2 <- allgenes_JG2[,c(ngenes+7,ngenes+2,ngenes+1,ngenes+3,ngenes+4,ngenes+5,ngenes+6,ngenes+8,1:ngenes)]
+genecounts_JG2 <- as.matrix(t(allgenes_JG2[,c(-1,-2,-3,-4,-5,-6,-7,-8)]))
+genecounts_JG2 <- log2(genecounts_JG2 + 1) #log2 transform
+nrow(genecounts_JG2) #31720 genes
+
+genecounts_JG <- cbind(genecounts_JG, genecounts_JG2)
+head(genecounts_JG)
+length(rownames(genecounts_JG)) #31720
+length(colnames(genecounts_JG)) #83945
+
+allgenes_JG <- bind_rows(allgenes_JG, allgenes_JG2)
+head(allgenes_JG)
+length(rownames(allgenes_JG)) #83945
+length(colnames(genecounts_JG)) #31728
+
+coldata_JG <- allgenes_JG[,1:8]
+coldata_JG$orig.ident <- as.factor(coldata_JG$orig.ident)
+coldata_JG$Sex <- as.factor(coldata_JG$Sex)
 ```
